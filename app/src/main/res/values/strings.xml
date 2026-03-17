@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MyFirstApp</string>
+    <string name="student_info">Студент: Швецов\nГруппа: 3.2ИСиП-1</string>
+</resources>
