@@ -2,4 +2,9 @@
     <string name="app_name">MyFirstApp</string>
     <string name="main_text">My First Application</string>
     <string name="student_info">Student: Shvecov\nGroup: 3.2ISaP-1</string>
+    <string name="avatar_description">avatar description</string>
+    <string name="menu_description">Menu</string>
+    <string name="like_description">Like</string>
+    <string name="share_description">Share</string>
+    <string name="views_description">Visibility</string>
 </resources>
