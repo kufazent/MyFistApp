@@ -63,5 +63,12 @@ buildFeatures {
         implementation("androidx.activity:activity-ktx:1.8.0")
         implementation("androidx.recyclerview:recyclerview:1.3.2")
         implementation("com.google.android.material:material:1.11.0")
+        implementation("androidx.fragment:fragment-ktx:1.6.0")
     }
+}
+dependencies {
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
 }

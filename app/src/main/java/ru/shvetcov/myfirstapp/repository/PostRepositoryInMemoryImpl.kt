@@ -26,7 +26,8 @@ class PostRepositoryInMemoryImpl : PostRepository {
             likedByMe = false,
             likes = 999,
             shares = 25,
-            views = 5700
+            views = 5700,
+            video = null
         ),
         Post(
             id = 2,
@@ -37,7 +38,8 @@ class PostRepositoryInMemoryImpl : PostRepository {
             likedByMe = false,
             likes = 342,
             shares = 89,
-            views = 2300
+            views = 2300,
+            video = "https://www.youtube.com/watch?v=WhWc3b3KhnY"  // пример видео
         ),
         Post(
             id = 3,
