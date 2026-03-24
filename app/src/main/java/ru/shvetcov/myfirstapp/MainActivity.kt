@@ -15,46 +15,31 @@ import ru.shvetcov.myfirstapp.dto.Post
 import ru.shvetcov.myfirstapp.viewmodel.PostViewModel
 
 class MainActivity : AppCompatActivity() {
-    private val editPostLauncher = registerForActivityResult(EditPostContract()) { result ->
-        if (!result.isNullOrBlank()) {
-            // Получен текст отредактированного/нового поста
-            viewModel.changeContent(result)
-            viewModel.save()
-        }
-    }
     private lateinit var binding: ActivityMainBinding
     private val viewModel: PostViewModel by viewModels()
-
-    // ID поста, который редактируется (0 = новый пост)
     private var editingPostId: Long = 0L
 
     private val interactionListener = object : OnPostInteractionListener {
         override fun onLike(post: Post) {
             viewModel.likeById(post.id)
         }
-
         override fun onShare(post: Post) {
-            val shareIntent = Intent().apply {
-                action = Intent.ACTION_SEND
+            val shareIntent = Intent().apply { action = Intent.ACTION_SEND
                 putExtra(Intent.EXTRA_TEXT, post.content)
-                type = "text/plain"
-            }
-            // Создаем Chooser с заголовком
+                type = "text/plain" }
             val chooserIntent = Intent.createChooser(shareIntent, getString(R.string.share_post_via))
             startActivity(chooserIntent)
-            // Увеличиваем счетчик репостов
             viewModel.shareById(post.id)
-        }
 
+        }
         override fun onEdit(post: Post) {
+            editingPostId = post.id
             editPostLauncher.launch(post.content)
         }
-
         override fun onRemove(post: Post) {
             viewModel.removeById(post.id)
             Toast.makeText(this@MainActivity, "Пост удален", Toast.LENGTH_SHORT).show()
         }
-
         override fun onAvatarClick(post: Post) {
             Toast.makeText(this@MainActivity, "Профиль: ${post.author}", Toast.LENGTH_SHORT).show()
             viewModel.increaseViews(post.id)
@@ -65,9 +50,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.fab.setOnClickListener {
-            editPostLauncher.launch(null)
-        }
         val adapter = PostsAdapter(interactionListener)
         binding.list.adapter = adapter
         viewModel.data.observe(this) { posts ->
@@ -76,23 +58,6 @@ class MainActivity : AppCompatActivity() {
         binding.content.addTextChangedListener { text ->
             viewModel.changeContent(text.toString())
         }
-        binding.save.setOnClickListener {
-            val text = binding.content.text.toString()
-            if (text.isBlank()) {
-                Toast.makeText(this, "Введите текст поста", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            if (editingPostId != 0L) {
-                viewModel.saveEditedPost(editingPostId, text)
-                editingPostId = 0L
-            } else {
-                viewModel.changeContent(text)
-                viewModel.save()
-            }
-            binding.content.text.clear()
-            binding.cancelGroup.visibility = View.GONE
-            hideKeyboard(binding.content)
-        }
         binding.cancel.setOnClickListener {
             editingPostId = 0L
             binding.content.text.clear()
@@ -100,12 +65,26 @@ class MainActivity : AppCompatActivity() {
             hideKeyboard(binding.content)
             viewModel.cancelEdit()
         }
+        binding.fab.setOnClickListener {
+            editPostLauncher.launch(null)
+        }
+    }
+
+    private val editPostLauncher = registerForActivityResult(EditPostContract()) { result ->
+        if (!result.isNullOrBlank()) {
+            if (editingPostId != 0L) {
+                viewModel.saveEditedPost(editingPostId, result)
+                editingPostId = 0L
+            } else {
+                viewModel.changeContent(result)
+                viewModel.save()
+            }
+        }
     }
     private fun hideKeyboard(view: View) {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
-
     private fun showKeyboard(view: View) {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
         imm.showSoftInput(view, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
