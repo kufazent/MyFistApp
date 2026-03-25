@@ -1,6 +1,5 @@
 package ru.shvetcov.myfirstapp.activity
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -37,7 +36,7 @@ class EditPostActivity : AppCompatActivity() {
             val resultIntent = Intent().apply {
                 putExtra(Intent.EXTRA_TEXT, text)
             }
-            setResult(Activity.RESULT_OK, resultIntent)
+            setResult(RESULT_OK, resultIntent)
             finish()
         }
     }
