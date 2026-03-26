@@ -9,6 +9,7 @@ import ru.shvetcov.myfirstapp.dto.Post
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.core.content.edit
 
 class PostRepositorySharedPrefsImpl(
     private val context: Context
@@ -123,7 +124,7 @@ class PostRepositorySharedPrefsImpl(
     }
 
     private fun saveData() {
-        prefs.edit().putString(key, gson.toJson(posts)).apply()
+        prefs.edit { putString(key, gson.toJson(posts)) }
     }
 
     private fun createInitialData() {

@@ -1,7 +1,6 @@
 package ru.shvetcov.myfirstapp.adapter
 
 import android.content.Intent
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.PopupMenu
@@ -12,6 +11,8 @@ import ru.shvetcov.myfirstapp.databinding.CardPostBinding
 import ru.shvetcov.myfirstapp.databinding.ItemVideoBinding
 import ru.shvetcov.myfirstapp.dto.Post
 import java.text.DecimalFormat
+import androidx.core.net.toUri
+
 class PostViewHolder(
     private val binding: CardPostBinding,
     private val listener: OnPostInteractionListener
@@ -45,7 +46,7 @@ class PostViewHolder(
 
                 // Обработка клика на весь блок видео
                 videoContainer.setOnClickListener {
-                    openVideo(post.video!!)
+                    openVideo(post.video)
                 }
             }
 
@@ -53,6 +54,8 @@ class PostViewHolder(
             like.setOnClickListener { listener.onLike(post) }
             share.setOnClickListener { listener.onShare(post) }
             avatar.setOnClickListener { listener.onAvatarClick(post) }
+            root.setOnClickListener {listener.onPostClick(post) }
+
 
             // Кнопка меню
             menu.setOnClickListener { view ->
@@ -106,7 +109,7 @@ class PostViewHolder(
     }
     private fun openVideo(videoUrl: String) {
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl))
+            val intent = Intent(Intent.ACTION_VIEW, videoUrl.toUri())
             // Проверяем, есть ли приложение, которое может обработать этот Intent
             if (intent.resolveActivity(itemView.context.packageManager) != null) {
                 itemView.context.startActivity(intent)

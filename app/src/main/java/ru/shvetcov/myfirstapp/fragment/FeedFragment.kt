@@ -1,75 +1,102 @@
-package ru.shvetcov.myfirstapp
+package ru.shvetcov.myfirstapp.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import ru.shvetcov.myfirstapp.R
 import ru.shvetcov.myfirstapp.activity.EditPostContract
 import ru.shvetcov.myfirstapp.adapter.OnPostInteractionListener
 import ru.shvetcov.myfirstapp.adapter.PostsAdapter
-import ru.shvetcov.myfirstapp.databinding.ActivityMainBinding
+import ru.shvetcov.myfirstapp.databinding.FragmentFeedBinding
 import ru.shvetcov.myfirstapp.dto.Post
 import ru.shvetcov.myfirstapp.viewmodel.PostViewModel
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-    private val viewModel: PostViewModel by viewModels()
+class FeedFragment : Fragment() {
+
+    private var _binding: FragmentFeedBinding? = null
+    private val binding get() = _binding!!
     private var editingPostId: Long = 0L
+
+    private val viewModel: PostViewModel by viewModels()
 
     private val interactionListener = object : OnPostInteractionListener {
         override fun onLike(post: Post) {
             viewModel.likeById(post.id)
         }
+
         override fun onShare(post: Post) {
-            val shareIntent = Intent().apply { action = Intent.ACTION_SEND
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND
                 putExtra(Intent.EXTRA_TEXT, post.content)
-                type = "text/plain" }
+                type = "text/plain"
+            }
             val chooserIntent = Intent.createChooser(shareIntent, getString(R.string.share_post_via))
             startActivity(chooserIntent)
             viewModel.shareById(post.id)
-
         }
+
         override fun onEdit(post: Post) {
             editingPostId = post.id
             editPostLauncher.launch(post.content)
         }
+
         override fun onRemove(post: Post) {
             viewModel.removeById(post.id)
-            Toast.makeText(this@MainActivity, "Пост удален", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), R.string.remove_post, Toast.LENGTH_SHORT).show()
         }
+
         override fun onAvatarClick(post: Post) {
-            Toast.makeText(this@MainActivity, "Профиль: ${post.author}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Profile: ${post.author}", Toast.LENGTH_SHORT).show()
             viewModel.increaseViews(post.id)
+        }
+
+        override fun onPostClick(post: Post) {
+            val bundle = Bundle().apply {
+                putLong("postId", post.id)
+            }
+            findNavController().navigate(
+                resId = R.id.action_feedFragment_to_postDetailFragment,
+                args = bundle
+            )
+            super.onPostClick(post)
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentFeedBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         val adapter = PostsAdapter(interactionListener)
         binding.list.adapter = adapter
-        viewModel.data.observe(this) { posts ->
+
+        // Важно: используем viewLifecycleOwner для подписки
+        viewModel.data.observe(viewLifecycleOwner) { posts ->
             adapter.submitList(posts)
         }
-        binding.content.addTextChangedListener { text ->
-            viewModel.changeContent(text.toString())
-        }
-        binding.cancel.setOnClickListener {
-            editingPostId = 0L
-            binding.content.text.clear()
-            binding.cancelGroup.visibility = View.GONE
-            hideKeyboard(binding.content)
-            viewModel.cancelEdit()
-        }
+
         binding.fab.setOnClickListener {
             editPostLauncher.launch(null)
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
     private val editPostLauncher = registerForActivityResult(EditPostContract()) { result ->
         if (!result.isNullOrBlank()) {
             if (editingPostId != 0L) {
@@ -80,13 +107,5 @@ class MainActivity : AppCompatActivity() {
                 viewModel.save()
             }
         }
-    }
-    private fun hideKeyboard(view: View) {
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-        imm.hideSoftInputFromWindow(view.windowToken, 0)
-    }
-    private fun showKeyboard(view: View) {
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-        imm.showSoftInput(view, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
     }
 }
