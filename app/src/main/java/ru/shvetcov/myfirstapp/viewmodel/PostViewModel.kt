@@ -9,8 +9,6 @@ import ru.shvetcov.myfirstapp.repository.PostRepository
 import ru.shvetcov.myfirstapp.repository.PostRepositoryFileImpl  // или другую реализацию
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
-
-    // Используем файловую реализацию с передачей контекста приложения
     private val repository: PostRepository = PostRepositoryFileImpl(application)
 
     val data: LiveData<List<Post>> = repository.getAll()
